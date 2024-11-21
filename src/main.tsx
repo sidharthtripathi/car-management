@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import { Join } from "./pages/Join";
+import CreateCar from "./pages/CreateCar";
 // import CreateCar from "./pages/CreateCar";
 const router = createBrowserRouter([
   {
@@ -19,7 +20,7 @@ const router = createBrowserRouter([
   },
   {
     path : "/create",
-    element : "create car"
+    element : <CreateCar/>
   }
 ]);
 
