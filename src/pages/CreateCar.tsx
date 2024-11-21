@@ -5,30 +5,25 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { db, storage } from "@/appwrite/appwrite";
 import { ID } from "appwrite";
 
 const createCarSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
+  title: z.string().min(1,"Title can not be Empty"),
+  description: z.string().min(1,"Description can not be Empty"),
   images: z.array(z.instanceof(FileList)),
   tags: z.array(z.string()),
+  tagInput: z.string().optional(),
 });
 
 type CreateCarType = z.infer<typeof createCarSchema>;
 
 export default function CreateCar() {
-  const [inputTag, setInputTag] = useState("");
-  const {
-    register,
-    control,
-    getValues,
-    handleSubmit,
-  } = useForm<CreateCarType>({
-    resolver: zodResolver(createCarSchema),
-  });
+  const { register, control, resetField, getValues, handleSubmit,formState : {errors} } =
+    useForm<CreateCarType>({
+      resolver: zodResolver(createCarSchema),
+    });
   const {
     fields: imagesField,
     remove,
@@ -42,16 +37,30 @@ export default function CreateCar() {
     control,
     name: "tags",
   });
-  async function submitForm({title,description,images,tags}: CreateCarType) {
+  async function submitForm({
+    title,
+    description,
+    images,
+    tags,
+  }: CreateCarType) {
     console.log("submitting");
     // upload images
-    let imgIds : string[] = [];
-    for(let i = 0 ; i<images.length ; i++){
-      const res = await storage.createFile("6737a5bf0001c7ebdf95",ID.unique(),images[i][0])
-      imgIds.push(res.$id)
+    let imgIds: string[] = [];
+    for (let i = 0; i < images.length; i++) {
+      const res = await storage.createFile(
+        "6737a5bf0001c7ebdf95",
+        ID.unique(),
+        images[i][0]
+      );
+      imgIds.push(res.$id);
     }
-    const res = await db.createDocument("6737970c00218f6f57e3","67379719001516e08d1f",ID.unique(),{title ,description,tags,images : imgIds})
-    console.log(res.$id)
+    const res = await db.createDocument(
+      "6737970c00218f6f57e3",
+      "67379719001516e08d1f",
+      ID.unique(),
+      { title, description, tags, images: imgIds }
+    );
+    console.log(res.$id);
   }
   let tags = getValues("tags");
   return (
@@ -66,6 +75,7 @@ export default function CreateCar() {
             {...register("title")}
             placeholder="Enter Title"
           />
+          {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
         </div>
         <div>
           <Label htmlFor="description">Description</Label>
@@ -74,30 +84,27 @@ export default function CreateCar() {
             {...register("description")}
             placeholder="Enter Description"
           />
+          {errors.description && <p className="text-xs text-destructive">{errors.description.message}</p>}
         </div>
         <div>
           <Label>Tags</Label>
           <div className="flex items-center">
             <Input
               placeholder="Enter tag"
-              onChange={(e) => {
-                setInputTag(e.target.value);
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  appendTag(getValues("tagInput"));
+                  resetField("tagInput");
+                }
               }}
-              value={inputTag}
+              {...register("tagInput")}
             />
-            <Button
-              type="button"
-              onClick={() => {
-                appendTag(inputTag);
-                setInputTag("")
-              }}
-            >
-              add tag
-            </Button>
           </div>
           <div className="space-x-1 space-y-1">
             {tagsField.map((field, index) => (
               <Badge
+                className="hover:cursor-pointer"
                 key={field.id}
                 onClick={() => {
                   removeTag(index);

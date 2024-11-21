@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense,lazy } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +8,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import App from "./App";
 import { Join } from "./pages/Join";
 import CreateCar from "./pages/CreateCar";
+import ListCars from "./pages/ListCars";
 // import CreateCar from "./pages/CreateCar";
 const router = createBrowserRouter([
   {
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path : "/create",
     element : <CreateCar/>
+  },
+  {
+    path : "/list",
+    element : <ListCars/>
   }
 ]);
 
